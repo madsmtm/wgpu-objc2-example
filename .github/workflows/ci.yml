@@ -22,7 +22,7 @@ jobs:
     - name: Cache Cargo
       uses: actions/cache@v4
       with:
-        path:
+        path: |
           ~/.cargo/registry/index/
           ~/.cargo/registry/cache/
           ~/.cargo/git/db/
