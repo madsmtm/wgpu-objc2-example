@@ -55,7 +55,7 @@ declare_class!(
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
-            if cfg!(feature = "queue-redraw") {
+            if cfg!(feature = "queue-display") {
                 let view = self.retain();
                 queue_closure(move || unsafe { view.setNeedsDisplay(true) });
             }
@@ -70,7 +70,7 @@ declare_class!(
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
-            if cfg!(feature = "queue-redraw") {
+            if cfg!(feature = "queue-display") {
                 let view = self.retain();
                 queue_closure(move || unsafe { view.setNeedsDisplay(true) });
             }
@@ -105,7 +105,7 @@ declare_class!(
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
-            if cfg!(feature = "queue-redraw") {
+            if cfg!(feature = "queue-display") {
                 let view = self.retain();
                 queue_closure(move || view.setNeedsDisplay());
             }

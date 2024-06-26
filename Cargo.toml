@@ -30,8 +30,8 @@ objc2-ui-kit = { version = "0.2.2", features = ["all"] }
 # Redraw immediately when resizing or when stepping.
 immediate-redraw = []
 
-# Request a new redraw immediately after drawing.
-queue-redraw = []
+# Set the view as needing display immediately after drawing.
+queue-display = []
 
 # Trigger `drawRect:` instead of `updateLayer`.
 #
