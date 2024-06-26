@@ -1,0 +1,28 @@
+[package]
+name = "wgpu-objc2-example"
+version = "0.1.0"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+publish = false
+
+[dependencies]
+wgpu = "0.20.0"
+objc2 = "0.5.2"
+objc2-foundation = { version = "0.2.2", features = ["all"] }
+objc2-app-kit = { version = "0.2.2", features = ["all"] }
+pollster = "0.3.0"
+
+[features]
+# Whether to redraw when resizing the layer, to test things out
+hacky-redraw = []
+
+# Whether to trigger `drawRect:` instead of `updateLayer`
+draw-rect = []
+
+# Whether to use in-development WGPU with breaking changes
+wgpu-unstable = []
+
+# Uncomment the below to use a development version WGPU
+# default = ["wgpu-unstable"]
+# [patch.crates-io]
+# wgpu = { path = "../wgpu/wgpu" }
