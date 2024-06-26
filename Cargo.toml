@@ -14,8 +14,10 @@ tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 wgpu = "0.20.0"
 pollster = "0.3.0"
+core-foundation = "0.9.4"
+block2 = "0.5.1"
 objc2 = "0.5.2"
-objc2-foundation = { version = "0.2.2", features = ["all"] }
+objc2-foundation = { version = "0.2.2", features = ["all", "block2"] }
 objc2-quartz-core = { version = "0.2.2", features = ["all"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
@@ -25,22 +27,25 @@ objc2-app-kit = { version = "0.2.2", features = ["all"] }
 objc2-ui-kit = { version = "0.2.2", features = ["all"] }
 
 [features]
-# Whether to redraw immediately when resizing or when stepping.
+# Redraw immediately when resizing or when stepping.
 immediate-redraw = []
 
-# Whether to trigger `drawRect:` instead of `updateLayer`.
+# Request a new redraw immediately after drawing.
+queue-redraw = []
+
+# Trigger `drawRect:` instead of `updateLayer`.
 #
 # Only relevant in AppKit - this is always enabled when using UIKit.
 draw-rect = []
 
-# Whether to use in-development WGPU with breaking changes.
-wgpu-unstable = []
-
-# Whether to request redraws using CADisplayLink
+# Request redraws using `CADisplayLink`.
 display-link = []
 
-# Whether to disable VSync (i.e. use PresentMode::Immediate)
+# Disable VSync (i.e. use `wgpu::PresentMode::Immediate`).
 no-vsync = []
+
+# Use in-development `wgpu` with breaking changes.
+wgpu-unstable = []
 
 # Uncomment the below to use a development version WGPU.
 # default = ["wgpu-unstable"]

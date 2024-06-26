@@ -4,6 +4,7 @@ use tracing_subscriber::filter::EnvFilter;
 
 #[cfg(target_os = "macos")]
 mod appkit_main;
+mod run_loop;
 #[cfg(not(target_os = "macos"))]
 mod uikit_main;
 mod view;

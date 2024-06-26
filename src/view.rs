@@ -12,6 +12,7 @@ use wgpu::rwh::{
     RawWindowHandle, UiKitWindowHandle, WindowHandle,
 };
 
+use crate::run_loop::queue_closure;
 use crate::wgpu_triangle::Triangle;
 
 #[cfg(target_os = "macos")]
@@ -53,6 +54,11 @@ declare_class!(
             );
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
+
+            if cfg!(feature = "queue-redraw") {
+                let view = self.retain();
+                queue_closure(move || unsafe { view.setNeedsDisplay(true) });
+            }
         }
 
         #[method(drawRect:)]
@@ -63,6 +69,11 @@ declare_class!(
             );
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
+
+            if cfg!(feature = "queue-redraw") {
+                let view = self.retain();
+                queue_closure(move || unsafe { view.setNeedsDisplay(true) });
+            }
 
             // No need to call super, it does nothing on `NSView`.
         }
@@ -77,7 +88,10 @@ declare_class!(
             );
             let triangle = self.ivars().get().expect("initialized");
             triangle.resize(new_size.width as u32, new_size.height as u32);
-            if cfg!(all(feature = "immediate-redraw", not(feature = "display-link"))) {
+            if cfg!(all(
+                feature = "immediate-redraw",
+                not(feature = "display-link")
+            )) {
                 triangle.redraw();
             }
         }
@@ -91,6 +105,11 @@ declare_class!(
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
+            if cfg!(feature = "queue-redraw") {
+                let view = self.retain();
+                queue_closure(move || view.setNeedsDisplay());
+            }
+
             // No need to call super, it does nothing on `UIView`.
         }
 
@@ -102,7 +121,10 @@ declare_class!(
             tracing::debug!("triggered `layoutSubviews`, new_size: {:?}", new_size);
             let triangle = self.ivars().get().expect("initialized");
             triangle.resize(new_size.width as u32, new_size.height as u32);
-            if cfg!(all(feature = "immediate-redraw", not(feature = "display-link"))) {
+            if cfg!(all(
+                feature = "immediate-redraw",
+                not(feature = "display-link")
+            )) {
                 triangle.redraw();
             }
 
