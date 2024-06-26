@@ -95,6 +95,24 @@ declare_class!(
                 triangle.redraw();
             }
         }
+
+        #[method(viewDidChangeBackingProperties)]
+        fn changed_backing_properties(&self) {
+            let new_size = scaled_view_frame(self);
+            tracing::debug!(
+                live_resize = unsafe { self.inLiveResize() },
+                ?new_size,
+                "triggered `viewDidChangeBackingProperties`"
+            );
+            let triangle = self.ivars().get().expect("initialized");
+            triangle.resize(new_size.width as u32, new_size.height as u32);
+            if cfg!(all(
+                feature = "immediate-redraw",
+                not(feature = "display-link")
+            )) {
+                triangle.redraw();
+            }
+        }
     }
 
     #[cfg(not(target_os = "macos"))]
@@ -137,7 +155,7 @@ declare_class!(
     unsafe impl WgpuTriangleView {
         #[method(step:)]
         fn step(&self, _sender: &CADisplayLink) {
-            tracing::debug!("triggered `step:`");
+            tracing::trace!("triggered `step:`");
             if cfg!(feature = "immediate-redraw") {
                 let triangle = self.ivars().get().expect("initialized");
                 triangle.redraw();
