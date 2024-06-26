@@ -2,8 +2,11 @@ use std::cell::OnceCell;
 use std::ptr::NonNull;
 
 use objc2::rc::Retained;
-use objc2::{declare_class, msg_send_id, mutability, ClassType, DeclaredClass};
-use objc2_foundation::{CGRect, CGSize, MainThreadMarker, NSObjectProtocol};
+use objc2::{declare_class, msg_send_id, mutability, sel, ClassType, DeclaredClass};
+use objc2_foundation::{
+    CGRect, CGSize, MainThreadMarker, NSObjectProtocol, NSRunLoop, NSRunLoopCommonModes,
+};
+use objc2_quartz_core::CADisplayLink;
 use wgpu::rwh::{
     AppKitWindowHandle, DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle,
     RawWindowHandle, UiKitWindowHandle, WindowHandle,
@@ -44,14 +47,12 @@ declare_class!(
 
         #[method(updateLayer)]
         fn update_layer(&self) {
-            eprintln!("triggered `updateLayer`. Live resize: {}", unsafe { self.inLiveResize() });
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
         }
 
         #[method(drawRect:)]
         fn draw_rect(&self, _rect: CGRect) {
-            eprintln!("triggered `drawRect:`. Live resize: {}", unsafe { self.inLiveResize() });
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
@@ -73,7 +74,6 @@ declare_class!(
     unsafe impl WgpuTriangleView {
         #[method(drawRect:)]
         fn draw_rect(&self, _rect: CGRect) {
-            eprintln!("triggered `drawRect:`");
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
@@ -94,6 +94,22 @@ declare_class!(
             // Calling super here is not really necessary, as we have no
             // subviews, but we do it anyway just to make sure.
             let _: () = unsafe { objc2::msg_send![super(self), layoutSubviews] };
+        }
+    }
+
+    unsafe impl WgpuTriangleView {
+        #[method(step:)]
+        fn step(&self, _sender: &CADisplayLink) {
+            #[cfg(target_os = "macos")]
+            unsafe { self.setNeedsDisplay(true) };
+            #[cfg(not(target_os = "macos"))]
+            self.setNeedsDisplay();
+
+            #[cfg(feature = "hacky-redraw")]
+            {
+                let triangle = self.ivars().get().expect("initialized");
+                triangle.redraw();
+            }
         }
     }
 );
@@ -157,7 +173,7 @@ impl WgpuTriangleView {
             unsafe {
                 notification_center.addObserver_selector_name_object(
                     &view,
-                    objc2::sel!(frameDidChange:),
+                    sel!(frameDidChange:),
                     Some(objc2_app_kit::NSViewFrameDidChangeNotification),
                     Some(&view),
                 );
@@ -170,7 +186,19 @@ impl WgpuTriangleView {
             view.setContentMode(objc2_ui_kit::UIViewContentMode::Redraw);
         }
 
+        if cfg!(feature = "display-link") {
+            view.redraw_with_displaylink();
+        }
+
         view
+    }
+
+    fn redraw_with_displaylink(&self) {
+        let display_link =
+            unsafe { CADisplayLink::displayLinkWithTarget_selector(self, sel!(step:)) };
+        unsafe {
+            display_link.addToRunLoop_forMode(&NSRunLoop::currentRunLoop(), NSRunLoopCommonModes)
+        };
     }
 }
 

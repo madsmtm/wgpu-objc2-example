@@ -14,6 +14,7 @@ wgpu = "0.20.0"
 pollster = "0.3.0"
 objc2 = "0.5.2"
 objc2-foundation = { version = "0.2.2", features = ["all"] }
+objc2-quartz-core = { version = "0.2.2", features = ["all"] }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.2.2", features = ["all"] }
@@ -32,6 +33,9 @@ draw-rect = []
 
 # Whether to use in-development WGPU with breaking changes.
 wgpu-unstable = []
+
+# Whether to request redraws using CADisplayLink
+display-link = []
 
 # Uncomment the below to use a development version WGPU.
 # default = ["wgpu-unstable"]
