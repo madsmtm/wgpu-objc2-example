@@ -19,6 +19,7 @@ block2 = "0.5.1"
 objc2 = "0.5.2"
 objc2-foundation = { version = "0.2.2", features = ["all", "block2"] }
 objc2-quartz-core = { version = "0.2.2", features = ["all"] }
+bytemuck = "1.16.1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
 objc2-app-kit = { version = "0.2.2", features = ["all"] }

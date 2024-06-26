@@ -1,5 +1,6 @@
 //! Adapted from `wgpu/examples/src/hello_triangle`.
 use std::cell::RefCell;
+use wgpu::util::DeviceExt;
 
 use crate::frame_counter::FrameCounter;
 
@@ -13,6 +14,8 @@ pub struct Triangle<'window> {
     queue: wgpu::Queue,
     shader: wgpu::ShaderModule,
     pipeline_layout: wgpu::PipelineLayout,
+    bind_group: wgpu::BindGroup,
+    uniform_buf: wgpu::Buffer,
     render_pipeline: wgpu::RenderPipeline,
     config: RefCell<wgpu::SurfaceConfiguration>,
     frame_counter: FrameCounter,
@@ -58,10 +61,38 @@ impl<'window> Triangle<'window> {
             source: wgpu::ShaderSource::Wgsl(include_str!("shader.wgsl").into()),
         });
 
+        let bind_group_layout = device.create_bind_group_layout(&wgpu::BindGroupLayoutDescriptor {
+            label: None,
+            entries: &[wgpu::BindGroupLayoutEntry {
+                binding: 0,
+                visibility: wgpu::ShaderStages::VERTEX,
+                ty: wgpu::BindingType::Buffer {
+                    ty: wgpu::BufferBindingType::Uniform,
+                    has_dynamic_offset: false,
+                    min_binding_size: wgpu::BufferSize::new(4),
+                },
+                count: None,
+            }],
+        });
         let pipeline_layout = device.create_pipeline_layout(&wgpu::PipelineLayoutDescriptor {
             label: None,
-            bind_group_layouts: &[],
+            bind_group_layouts: &[&bind_group_layout],
             push_constant_ranges: &[],
+        });
+
+        let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
+            label: Some("Uniform Buffer"),
+            contents: bytemuck::cast_slice(&[width as f32]),
+            usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
+        });
+
+        let bind_group = device.create_bind_group(&wgpu::BindGroupDescriptor {
+            layout: &bind_group_layout,
+            entries: &[wgpu::BindGroupEntry {
+                binding: 0,
+                resource: uniform_buf.as_entire_binding(),
+            }],
+            label: None,
         });
 
         let swapchain_capabilities = surface.get_capabilities(&adapter);
@@ -106,6 +137,8 @@ impl<'window> Triangle<'window> {
             queue,
             shader,
             pipeline_layout,
+            uniform_buf,
+            bind_group,
             render_pipeline,
             config: RefCell::new(config),
             frame_counter: FrameCounter::new(),
@@ -113,6 +146,9 @@ impl<'window> Triangle<'window> {
     }
 
     pub fn resize(&self, width: u32, height: u32) {
+        self.queue
+            .write_buffer(&self.uniform_buf, 0, bytemuck::cast_slice(&[width as f32]));
+
         let mut config = self.config.borrow_mut();
         config.width = width;
         config.height = height;
@@ -146,6 +182,7 @@ impl<'window> Triangle<'window> {
                 occlusion_query_set: None,
             });
             rpass.set_pipeline(&self.render_pipeline);
+            rpass.set_bind_group(0, &self.bind_group, &[]);
             rpass.draw(0..3, 0..1);
         }
 
