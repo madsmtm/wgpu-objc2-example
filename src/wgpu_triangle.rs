@@ -1,8 +1,7 @@
 //! Adapted from `wgpu/examples/src/hello_triangle`.
-use std::{
-    cell::{Cell, RefCell},
-    time::{Duration, Instant},
-};
+use std::cell::RefCell;
+
+use crate::frame_counter::FrameCounter;
 
 #[allow(unused)] // Unsure which of these need to be kept around!
 #[derive(Debug)]
@@ -154,34 +153,5 @@ impl<'window> Triangle<'window> {
         frame.present();
 
         self.frame_counter.update();
-    }
-}
-
-#[derive(Debug)]
-struct FrameCounter {
-    last_printed_instant: Cell<Instant>,
-    frame_count: Cell<u32>,
-}
-
-impl FrameCounter {
-    fn new() -> Self {
-        Self {
-            last_printed_instant: Cell::new(Instant::now()),
-            frame_count: Cell::new(0),
-        }
-    }
-
-    fn update(&self) {
-        self.frame_count.set(self.frame_count.get() + 1);
-
-        let now = Instant::now();
-        let elapsed = now - self.last_printed_instant.get();
-        if elapsed > Duration::from_secs(1) {
-            let fps = self.frame_count.get() as f32 / elapsed.as_secs_f32();
-            tracing::info!("FPS: {:.1}", fps);
-
-            self.last_printed_instant.set(now);
-            self.frame_count.set(0);
-        }
     }
 }
