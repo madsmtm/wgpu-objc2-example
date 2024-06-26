@@ -91,7 +91,12 @@ impl<'window> Triangle<'window> {
             cache: None,
         });
 
-        let config = surface.get_default_config(&adapter, width, height).unwrap();
+        let mut config = surface.get_default_config(&adapter, width, height).unwrap();
+        config.present_mode = if cfg!(feature = "no-vsync") {
+            wgpu::PresentMode::Immediate
+        } else {
+            wgpu::PresentMode::default()
+        };
         surface.configure(&device, &config);
 
         Self {

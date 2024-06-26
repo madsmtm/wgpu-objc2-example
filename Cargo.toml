@@ -37,6 +37,9 @@ wgpu-unstable = []
 # Whether to request redraws using CADisplayLink
 display-link = []
 
+# Whether to disable VSync (i.e. use PresentMode::Immediate)
+no-vsync = []
+
 # Uncomment the below to use a development version WGPU.
 # default = ["wgpu-unstable"]
 # [patch.crates-io]
