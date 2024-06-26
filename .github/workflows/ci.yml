@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install targets
+      # A macOS ARM64 target and an iOS simulator target for fairly good coverage
+      run: rustup target add aarch64-apple-darwin x86_64-apple-ios
+
+    - name: Cache Cargo
+      uses: actions/cache@v4
+      with:
+        path:
+          ~/.cargo/registry/index/
+          ~/.cargo/registry/cache/
+          ~/.cargo/git/db/
+        key: cargo-${{ hashFiles('**/Cargo.lock') }}
+
+    - name: cargo fmt
+      run: cargo fmt -- --check
+
+    - name: cargo check
+      run: cargo check --target aarch64-apple-darwin --target x86_64-apple-ios
