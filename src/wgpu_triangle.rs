@@ -1,5 +1,8 @@
 //! Adapted from `wgpu/examples/src/hello_triangle`.
-use std::cell::RefCell;
+use std::{
+    cell::{Cell, RefCell},
+    time::{Duration, Instant},
+};
 
 #[allow(unused)] // Unsure which of these need to be kept around!
 #[derive(Debug)]
@@ -13,6 +16,7 @@ pub struct Triangle<'window> {
     pipeline_layout: wgpu::PipelineLayout,
     render_pipeline: wgpu::RenderPipeline,
     config: RefCell<wgpu::SurfaceConfiguration>,
+    frame_counter: FrameCounter,
 }
 
 impl<'window> Triangle<'window> {
@@ -100,6 +104,7 @@ impl<'window> Triangle<'window> {
             pipeline_layout,
             render_pipeline,
             config: RefCell::new(config),
+            frame_counter: FrameCounter::new(),
         }
     }
 
@@ -142,5 +147,36 @@ impl<'window> Triangle<'window> {
 
         self.queue.submit(Some(encoder.finish()));
         frame.present();
+
+        self.frame_counter.update();
+    }
+}
+
+#[derive(Debug)]
+struct FrameCounter {
+    last_printed_instant: Cell<Instant>,
+    frame_count: Cell<u32>,
+}
+
+impl FrameCounter {
+    fn new() -> Self {
+        Self {
+            last_printed_instant: Cell::new(Instant::now()),
+            frame_count: Cell::new(0),
+        }
+    }
+
+    fn update(&self) {
+        self.frame_count.set(self.frame_count.get() + 1);
+
+        let now = Instant::now();
+        let elapsed = now - self.last_printed_instant.get();
+        if elapsed > Duration::from_secs(1) {
+            let fps = self.frame_count.get() as f32 / elapsed.as_secs_f32();
+            eprintln!("FPS: {:.1}", fps);
+
+            self.last_printed_instant.set(now);
+            self.frame_count.set(0);
+        }
     }
 }
