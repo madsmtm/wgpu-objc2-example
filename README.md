@@ -10,3 +10,7 @@ cargo +nightly build -Zbuild-std --target=aarch64-apple-ios-macabi
 CARGO_BUNDLE_SKIP_BUILD=1 cargo bundle --target=aarch64-apple-ios-macabi --format=ios
 ./target/aarch64-apple-ios-macabi/debug/bundle/ios/wgpu-objc2-example.app/wgpu-objc2-example
 ```
+
+## Configurations
+
+See [`Cargo.toml`][./Cargo.toml] for the list of features that change the mode of execution.
