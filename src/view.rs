@@ -132,7 +132,7 @@ declare_class!(
         }
 
         // `layoutSubviews` is the recommended way to listen for changes to
-        // the view's frame.
+        // the view's frame. Also tracks changes to the backing scale factor.
         #[method(layoutSubviews)]
         fn layout_subviews(&self) {
             let new_size = scaled_view_frame(self);
