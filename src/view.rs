@@ -47,12 +47,20 @@ declare_class!(
 
         #[method(updateLayer)]
         fn update_layer(&self) {
+            tracing::trace!(
+                live_resize = unsafe { self.inLiveResize() },
+                "triggered `updateLayer`"
+            );
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
         }
 
         #[method(drawRect:)]
         fn draw_rect(&self, _rect: CGRect) {
+            tracing::trace!(
+                live_resize = unsafe { self.inLiveResize() },
+                "triggered `drawRect:`"
+            );
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
@@ -62,7 +70,11 @@ declare_class!(
         #[method(frameDidChange:)]
         fn frame_did_change(&self, _notification: &objc2_foundation::NSNotification) {
             let new_size = scaled_view_frame(self);
-            eprintln!("triggered `frameDidChange:`. Live resize: {}, new_size: {:?}", unsafe { self.inLiveResize() }, new_size);
+            tracing::debug!(
+                live_resize = unsafe { self.inLiveResize() },
+                ?new_size,
+                "triggered `frameDidChange:`"
+            );
             let triangle = self.ivars().get().expect("initialized");
             triangle.resize(new_size.width as u32, new_size.height as u32);
             #[cfg(feature = "hacky-redraw")]
@@ -74,6 +86,7 @@ declare_class!(
     unsafe impl WgpuTriangleView {
         #[method(drawRect:)]
         fn draw_rect(&self, _rect: CGRect) {
+            tracing::trace!("triggered `drawRect:`");
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
@@ -85,7 +98,7 @@ declare_class!(
         #[method(layoutSubviews)]
         fn layout_subviews(&self) {
             let new_size = scaled_view_frame(self);
-            eprintln!("triggered `layoutSubviews`, new_size: {:?}", new_size);
+            tracing::debug!("triggered `layoutSubviews`, new_size: {:?}", new_size);
             let triangle = self.ivars().get().expect("initialized");
             triangle.resize(new_size.width as u32, new_size.height as u32);
             #[cfg(feature = "hacky-redraw")]
@@ -100,8 +113,11 @@ declare_class!(
     unsafe impl WgpuTriangleView {
         #[method(step:)]
         fn step(&self, _sender: &CADisplayLink) {
+            tracing::debug!("triggered `step:`");
             #[cfg(target_os = "macos")]
-            unsafe { self.setNeedsDisplay(true) };
+            unsafe {
+                self.setNeedsDisplay(true)
+            };
             #[cfg(not(target_os = "macos"))]
             self.setNeedsDisplay();
 

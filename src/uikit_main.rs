@@ -77,6 +77,7 @@ declare_class!(
     unsafe impl UIApplicationDelegate for Delegate {
         #[method(applicationDidFinishLaunching:)]
         fn did_finish_launching(&self, _application: &UIApplication) {
+            tracing::info!("applicationDidFinishLaunching:");
             self.setup();
         }
     }

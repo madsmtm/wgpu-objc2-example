@@ -8,8 +8,10 @@ publish = false
 [package.metadata.bundle]
 identifier = "com.example.wgpu-objc2-example"
 
-# I'm using the `all` feature here because I'm lazy, and it's easier when developing
+# I'm using the `all` feature here because I'm lazy, and it's easier when developing.
 [dependencies]
+tracing = "0.1.40"
+tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 wgpu = "0.20.0"
 pollster = "0.3.0"
 objc2 = "0.5.2"

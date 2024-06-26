@@ -178,7 +178,7 @@ impl FrameCounter {
         let elapsed = now - self.last_printed_instant.get();
         if elapsed > Duration::from_secs(1) {
             let fps = self.frame_count.get() as f32 / elapsed.as_secs_f32();
-            eprintln!("FPS: {:.1}", fps);
+            tracing::info!("FPS: {:.1}", fps);
 
             self.last_printed_instant.set(now);
             self.frame_count.set(0);

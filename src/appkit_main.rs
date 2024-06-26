@@ -40,6 +40,7 @@ declare_class!(
     unsafe impl NSApplicationDelegate for Delegate {
         #[method(applicationDidFinishLaunching:)]
         fn did_finish_launching(&self, _notification: &NSNotification) {
+            tracing::info!("applicationDidFinishLaunching:");
             self.setup();
         }
     }
