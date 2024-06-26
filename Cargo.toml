@@ -25,8 +25,8 @@ objc2-app-kit = { version = "0.2.2", features = ["all"] }
 objc2-ui-kit = { version = "0.2.2", features = ["all"] }
 
 [features]
-# Whether to redraw when resizing the layer, to test things out.
-hacky-redraw = []
+# Whether to redraw immediately when resizing or when stepping.
+immediate-redraw = []
 
 # Whether to trigger `drawRect:` instead of `updateLayer`.
 #

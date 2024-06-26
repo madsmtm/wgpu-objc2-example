@@ -77,8 +77,9 @@ declare_class!(
             );
             let triangle = self.ivars().get().expect("initialized");
             triangle.resize(new_size.width as u32, new_size.height as u32);
-            #[cfg(feature = "hacky-redraw")]
-            triangle.redraw();
+            if cfg!(all(feature = "immediate-redraw", not(feature = "display-link"))) {
+                triangle.redraw();
+            }
         }
     }
 
@@ -101,8 +102,9 @@ declare_class!(
             tracing::debug!("triggered `layoutSubviews`, new_size: {:?}", new_size);
             let triangle = self.ivars().get().expect("initialized");
             triangle.resize(new_size.width as u32, new_size.height as u32);
-            #[cfg(feature = "hacky-redraw")]
-            triangle.redraw();
+            if cfg!(all(feature = "immediate-redraw", not(feature = "display-link"))) {
+                triangle.redraw();
+            }
 
             // Calling super here is not really necessary, as we have no
             // subviews, but we do it anyway just to make sure.
@@ -114,17 +116,16 @@ declare_class!(
         #[method(step:)]
         fn step(&self, _sender: &CADisplayLink) {
             tracing::debug!("triggered `step:`");
-            #[cfg(target_os = "macos")]
-            unsafe {
-                self.setNeedsDisplay(true)
-            };
-            #[cfg(not(target_os = "macos"))]
-            self.setNeedsDisplay();
-
-            #[cfg(feature = "hacky-redraw")]
-            {
+            if cfg!(feature = "immediate-redraw") {
                 let triangle = self.ivars().get().expect("initialized");
                 triangle.redraw();
+            } else {
+                #[cfg(target_os = "macos")]
+                unsafe {
+                    self.setNeedsDisplay(true);
+                }
+                #[cfg(not(target_os = "macos"))]
+                self.setNeedsDisplay();
             }
         }
     }
@@ -174,8 +175,9 @@ impl WgpuTriangleView {
             size.width as u32,
             size.height as u32,
         ));
-        #[cfg(feature = "hacky-redraw")]
-        triangle.redraw();
+        if cfg!(feature = "immediate-redraw") {
+            triangle.redraw();
+        }
         view.ivars().set(triangle).expect("only initialize once");
 
         // Listen for changes to the size of the view.
