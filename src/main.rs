@@ -1,110 +1,18 @@
 #![deny(unsafe_op_in_unsafe_fn)]
-use std::cell::OnceCell;
+use objc2_foundation::MainThreadMarker;
 
-use objc2::rc::Retained;
-use objc2::runtime::ProtocolObject;
-use objc2::{declare_class, msg_send_id, mutability, ClassType, DeclaredClass};
-use objc2_app_kit::{
-    NSApplication, NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType,
-    NSWindow, NSWindowStyleMask,
-};
-use objc2_foundation::{
-    MainThreadMarker, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize,
-};
-use view::WgpuTriangleView;
-
+#[cfg(target_os = "macos")]
+mod appkit_main;
+#[cfg(not(target_os = "macos"))]
+mod uikit_main;
 mod view;
 mod wgpu_triangle;
 
-#[derive(Debug)]
-#[allow(unused)]
-struct Ivars {
-    window: OnceCell<Retained<NSWindow>>,
-}
-
-declare_class!(
-    struct Delegate;
-
-    // SAFETY:
-    // - The superclass NSObject does not have any subclassing requirements.
-    // - Main thread only mutability is correct, since this is used for UI stuff.
-    // - `Delegate` does not implement `Drop`.
-    unsafe impl ClassType for Delegate {
-        type Super = NSObject;
-        type Mutability = mutability::MainThreadOnly;
-        const NAME: &'static str = "Delegate";
-    }
-
-    impl DeclaredClass for Delegate {
-        type Ivars = Ivars;
-    }
-
-    unsafe impl NSObjectProtocol for Delegate {}
-
-    unsafe impl NSApplicationDelegate for Delegate {
-        #[method(applicationDidFinishLaunching:)]
-        fn did_finish_launching(&self, _notification: &NSNotification) {
-            self.init();
-        }
-    }
-);
-
-impl Delegate {
-    fn new(mtm: MainThreadMarker) -> Retained<Self> {
-        let this = mtm.alloc().set_ivars(Ivars {
-            window: OnceCell::new(),
-        });
-        unsafe { msg_send_id![super(this), init] }
-    }
-
-    fn init(&self) {
-        let mtm = MainThreadMarker::from(self);
-
-        let app = NSApplication::sharedApplication(mtm);
-        app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
-
-        let window = {
-            let content_rect = NSRect::new(NSPoint::new(0., 0.), NSSize::new(1024., 768.));
-            let style = NSWindowStyleMask::Closable
-                | NSWindowStyleMask::Resizable
-                | NSWindowStyleMask::Titled;
-            let backing_store_type = NSBackingStoreType::NSBackingStoreBuffered;
-            let flag = false;
-            unsafe {
-                NSWindow::initWithContentRect_styleMask_backing_defer(
-                    mtm.alloc(),
-                    content_rect,
-                    style,
-                    backing_store_type,
-                    flag,
-                )
-            }
-        };
-        // Important for memory safety!
-        unsafe { window.setReleasedWhenClosed(false) };
-
-        let view = WgpuTriangleView::new(
-            mtm,
-            window.contentView().expect("window content view").frame(),
-        );
-
-        window.setContentView(Some(&view));
-
-        window.center();
-        window.makeKeyAndOrderFront(None);
-
-        self.ivars()
-            .window
-            .set(window)
-            .expect("can only initialize once");
-    }
-}
-
 fn main() {
-    let mtm: MainThreadMarker = MainThreadMarker::new().unwrap();
+    let mtm = MainThreadMarker::new().unwrap();
 
-    let app = NSApplication::sharedApplication(mtm);
-    let delegate = Delegate::new(mtm);
-    app.setDelegate(Some(ProtocolObject::from_ref(&*delegate)));
-    unsafe { app.run() };
+    #[cfg(target_os = "macos")]
+    appkit_main::main(mtm);
+    #[cfg(not(target_os = "macos"))]
+    uikit_main::main(mtm);
 }
