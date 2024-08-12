@@ -26,6 +26,7 @@ impl<'window> Triangle<'window> {
         target: impl Into<wgpu::SurfaceTarget<'window>>,
         width: u32,
         height: u32,
+        scale_factor: f32,
     ) -> Self {
         let instance = wgpu::Instance::default();
 
@@ -83,7 +84,7 @@ impl<'window> Triangle<'window> {
 
         let uniform_buf = device.create_buffer_init(&wgpu::util::BufferInitDescriptor {
             label: Some("Uniform Buffer"),
-            contents: bytemuck::cast_slice(&[width as f32]),
+            contents: bytemuck::cast_slice(&[width as f32 / scale_factor]),
             usage: wgpu::BufferUsages::UNIFORM | wgpu::BufferUsages::COPY_DST,
         });
 
@@ -151,9 +152,12 @@ impl<'window> Triangle<'window> {
         }
     }
 
-    pub fn resize(&self, width: u32, height: u32) {
-        self.queue
-            .write_buffer(&self.uniform_buf, 0, bytemuck::cast_slice(&[width as f32]));
+    pub fn resize(&self, width: u32, height: u32, scale_factor: f32) {
+        self.queue.write_buffer(
+            &self.uniform_buf,
+            0,
+            bytemuck::cast_slice(&[width as f32 / scale_factor]),
+        );
 
         let mut config = self.config.borrow_mut();
         config.width = width;

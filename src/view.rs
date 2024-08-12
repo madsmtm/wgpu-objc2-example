@@ -87,7 +87,7 @@ declare_class!(
                 "triggered `frameDidChange:`"
             );
             let triangle = self.ivars().get().expect("initialized");
-            triangle.resize(new_size.width as u32, new_size.height as u32);
+            triangle.resize(new_size.width as u32, new_size.height as u32, self.window().unwrap().backingScaleFactor() as f32);
             if cfg!(all(
                 feature = "immediate-redraw",
                 not(feature = "display-link")
@@ -105,7 +105,7 @@ declare_class!(
                 "triggered `viewDidChangeBackingProperties`"
             );
             let triangle = self.ivars().get().expect("initialized");
-            triangle.resize(new_size.width as u32, new_size.height as u32);
+            triangle.resize(new_size.width as u32, new_size.height as u32, self.window().unwrap().backingScaleFactor() as f32);
             if cfg!(all(
                 feature = "immediate-redraw",
                 not(feature = "display-link")
@@ -138,7 +138,7 @@ declare_class!(
             let new_size = scaled_view_frame(self);
             tracing::debug!("triggered `layoutSubviews`, new_size: {:?}", new_size);
             let triangle = self.ivars().get().expect("initialized");
-            triangle.resize(new_size.width as u32, new_size.height as u32);
+            triangle.resize(new_size.width as u32, new_size.height as u32, self.contentScaleFactor() as f32);
             if cfg!(all(
                 feature = "immediate-redraw",
                 not(feature = "display-link")
@@ -214,6 +214,7 @@ impl WgpuTriangleView {
             ViewWrapper(view.retain()),
             size.width as u32,
             size.height as u32,
+            1.0,
         ));
         if cfg!(feature = "immediate-redraw") {
             triangle.redraw();
