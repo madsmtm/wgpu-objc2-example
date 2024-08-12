@@ -48,7 +48,7 @@ no-vsync = []
 # Use in-development `wgpu` with breaking changes.
 wgpu-unstable = []
 
-# Uncomment the below to use a development version WGPU.
+# Uncomment the below and run `cargo update` to use a development version of wgpu.
 # default = ["wgpu-unstable"]
 # [patch.crates-io]
 # wgpu = { path = "../wgpu/wgpu" }
