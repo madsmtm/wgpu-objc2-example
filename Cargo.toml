@@ -51,4 +51,4 @@ wgpu-unstable = []
 # Uncomment the below and run `cargo update` to use a development version of wgpu.
 # default = ["wgpu-unstable"]
 # [patch.crates-io]
-# wgpu = { path = "../wgpu/wgpu" }
+# wgpu = { git = "https://github.com/madsmtm/wgpu.git", branch = "improve-metal-resizing" }
