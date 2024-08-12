@@ -46,6 +46,7 @@ impl<'window> Triangle<'window> {
                 &wgpu::DeviceDescriptor {
                     label: None,
                     required_features: wgpu::Features::empty(),
+                    memory_hints: wgpu::MemoryHints::Performance,
                     // Make sure we use the texture resolution limits from the adapter, so we can support images the size of the swapchain.
                     required_limits: wgpu::Limits::downlevel_webgl2_defaults()
                         .using_resolution(adapter.limits()),
@@ -103,12 +104,18 @@ impl<'window> Triangle<'window> {
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
+                #[cfg(feature = "wgpu-unstable")]
+                entry_point: Some("vs_main"),
+                #[cfg(not(feature = "wgpu-unstable"))]
                 entry_point: "vs_main",
                 buffers: &[],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
+                #[cfg(feature = "wgpu-unstable")]
+                entry_point: Some("fs_main"),
+                #[cfg(not(feature = "wgpu-unstable"))]
                 entry_point: "fs_main",
                 compilation_options: Default::default(),
                 targets: &[Some(swapchain_format.into())],
@@ -117,7 +124,6 @@ impl<'window> Triangle<'window> {
             depth_stencil: None,
             multisample: wgpu::MultisampleState::default(),
             multiview: None,
-            #[cfg(feature = "wgpu-unstable")]
             cache: None,
         });
 
