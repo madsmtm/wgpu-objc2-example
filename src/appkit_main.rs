@@ -59,7 +59,8 @@ impl Delegate {
 
         let app = NSApplication::sharedApplication(mtm);
         app.setActivationPolicy(NSApplicationActivationPolicy::Regular);
-        unsafe { app.activate() }; // Useful when the application is not bundled
+        #[allow(deprecated)] // New method `activate` is only available on macOS 14.0
+        app.activateIgnoringOtherApps(false); // Useful when the application is not bundled
 
         let window = {
             let content_rect = NSRect::new(NSPoint::new(0., 0.), NSSize::new(1024., 768.));
