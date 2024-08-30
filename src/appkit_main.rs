@@ -5,10 +5,12 @@ use objc2::runtime::ProtocolObject;
 use objc2::{declare_class, msg_send_id, mutability, ClassType, DeclaredClass};
 use objc2_app_kit::{
     NSApplication, NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType,
-    NSWindow, NSWindowStyleMask,
+    NSStackView, NSStackViewDistribution, NSUserInterfaceLayoutDirection,
+    NSUserInterfaceLayoutOrientation, NSWindow, NSWindowStyleMask,
 };
 use objc2_foundation::{
-    MainThreadMarker, NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize,
+    CGPoint, CGRect, CGSize, MainThreadMarker, NSNotification, NSObject, NSObjectProtocol, NSPoint,
+    NSRect, NSSize,
 };
 
 use crate::view::WgpuTriangleView;
@@ -82,12 +84,22 @@ impl Delegate {
         // Important for memory safety!
         unsafe { window.setReleasedWhenClosed(false) };
 
-        let view = WgpuTriangleView::new(
-            mtm,
-            window.contentView().expect("window content view").frame(),
-        );
-
-        window.setContentView(Some(&view));
+        let frame = window.contentView().expect("window content view").frame();
+        unsafe {
+            let view = NSStackView::new(mtm);
+            view.addArrangedSubview(&WgpuTriangleView::new(
+                mtm,
+                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
+            ));
+            let wgpu_view = WgpuTriangleView::new(
+                mtm,
+                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
+            );
+            view.addArrangedSubview(&wgpu_view);
+            view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
+            view.setDistribution(NSStackViewDistribution::FillEqually);
+            window.setContentView(Some(&view));
+        }
 
         window.center();
         window.makeKeyAndOrderFront(None);

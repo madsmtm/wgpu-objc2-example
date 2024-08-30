@@ -4,9 +4,12 @@ use std::ptr::NonNull;
 
 use objc2::rc::{Allocated, Retained};
 use objc2::{declare_class, msg_send_id, mutability, ClassType, DeclaredClass};
-use objc2_foundation::{MainThreadMarker, NSObject, NSObjectProtocol, NSStringFromClass};
+use objc2_foundation::{
+    CGPoint, CGRect, CGSize, MainThreadMarker, NSObject, NSObjectProtocol, NSStringFromClass,
+};
 use objc2_ui_kit::{
-    UIApplication, UIApplicationDelegate, UIApplicationMain, UIScreen, UIViewController, UIWindow,
+    UIApplication, UIApplicationDelegate, UIApplicationMain, UIScreen, UIStackView,
+    UIStackViewDistribution, UIViewController, UIWindow,
 };
 
 use crate::view::WgpuTriangleView;
@@ -98,7 +101,22 @@ impl Delegate {
         );
 
         let view_controller = ViewController::new(mtm);
-        view_controller.setView(Some(&WgpuTriangleView::new(mtm, frame)));
+
+        unsafe {
+            let view = UIStackView::new(mtm);
+            view.addArrangedSubview(&WgpuTriangleView::new(
+                mtm,
+                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
+            ));
+            let wgpu_view = WgpuTriangleView::new(
+                mtm,
+                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
+            );
+            view.addArrangedSubview(&wgpu_view);
+            // view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
+            view.setDistribution(UIStackViewDistribution::FillEqually);
+            view_controller.setView(Some(&view));
+        }
 
         window.setRootViewController(Some(&view_controller));
 
