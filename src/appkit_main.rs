@@ -45,6 +45,12 @@ declare_class!(
             tracing::info!("applicationDidFinishLaunching:");
             self.setup();
         }
+
+        #[method(applicationShouldTerminateAfterLastWindowClosed:)]
+        fn should_terminate_after_last_window_closed(&self, _sender: &NSApplication) -> bool {
+            tracing::info!("applicationShouldTerminateAfterLastWindowClosed:");
+            true
+        }
     }
 );
 
