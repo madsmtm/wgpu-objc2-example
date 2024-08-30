@@ -102,20 +102,19 @@ impl Delegate {
 
         let view_controller = ViewController::new(mtm);
 
-        unsafe {
-            let view = UIStackView::new(mtm);
-            view.addArrangedSubview(&WgpuTriangleView::new(
-                mtm,
-                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
-            ));
-            let wgpu_view = WgpuTriangleView::new(
-                mtm,
-                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
-            );
-            view.addArrangedSubview(&wgpu_view);
-            // view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
-            view.setDistribution(UIStackViewDistribution::FillEqually);
-            view_controller.setView(Some(&view));
+        if cfg!(feature = "two-triangles") {
+            // Frame will be resized by NSStackView automatically
+            let frame = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0));
+            unsafe {
+                let view = UIStackView::new(mtm);
+                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+                // view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
+                view.setDistribution(UIStackViewDistribution::FillEqually);
+                view_controller.setView(Some(&view));
+            }
+        } else {
+            view_controller.setView(Some(&WgpuTriangleView::new(mtm, frame)));
         }
 
         window.setRootViewController(Some(&view_controller));

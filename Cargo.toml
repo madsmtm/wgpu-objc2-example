@@ -45,6 +45,9 @@ display-link = []
 # Disable VSync (i.e. use `wgpu::PresentMode::Immediate`).
 no-vsync = []
 
+# Show two triangles side by side instead of just one.
+two-triangles = []
+
 # Use in-development `wgpu` with breaking changes.
 wgpu-unstable = []
 

@@ -5,8 +5,8 @@ use objc2::runtime::ProtocolObject;
 use objc2::{declare_class, msg_send_id, mutability, ClassType, DeclaredClass};
 use objc2_app_kit::{
     NSApplication, NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType,
-    NSStackView, NSStackViewDistribution, NSUserInterfaceLayoutDirection,
-    NSUserInterfaceLayoutOrientation, NSWindow, NSWindowStyleMask,
+    NSStackView, NSStackViewDistribution, NSUserInterfaceLayoutOrientation, NSWindow,
+    NSWindowStyleMask,
 };
 use objc2_foundation::{
     CGPoint, CGRect, CGSize, MainThreadMarker, NSNotification, NSObject, NSObjectProtocol, NSPoint,
@@ -84,20 +84,20 @@ impl Delegate {
         // Important for memory safety!
         unsafe { window.setReleasedWhenClosed(false) };
 
-        let frame = window.contentView().expect("window content view").frame();
-        unsafe {
-            let view = NSStackView::new(mtm);
-            view.addArrangedSubview(&WgpuTriangleView::new(
-                mtm,
-                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
-            ));
-            let wgpu_view = WgpuTriangleView::new(
-                mtm,
-                CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0)),
-            );
-            view.addArrangedSubview(&wgpu_view);
-            view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
-            view.setDistribution(NSStackViewDistribution::FillEqually);
+        if cfg!(feature = "two-triangles") {
+            // Frame will be resized by NSStackView automatically
+            let frame = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0));
+            unsafe {
+                let view = NSStackView::new(mtm);
+                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+                view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
+                view.setDistribution(NSStackViewDistribution::FillEqually);
+                window.setContentView(Some(&view));
+            }
+        } else {
+            let frame = window.contentView().expect("window content view").frame();
+            let view = WgpuTriangleView::new(mtm, frame);
             window.setContentView(Some(&view));
         }
 
