@@ -15,9 +15,11 @@ use wgpu::rwh::{
 use crate::run_loop::queue_closure;
 use crate::wgpu_triangle::Triangle;
 
-#[cfg(target_os = "macos")]
+#[cfg(feature = "mtkview")]
+type View = objc2_metal_kit::MTKView;
+#[cfg(all(target_os = "macos", not(feature = "mtkview")))]
 type View = objc2_app_kit::NSView;
-#[cfg(not(target_os = "macos"))]
+#[cfg(all(not(target_os = "macos"), not(feature = "mtkview")))]
 type View = objc2_ui_kit::UIView;
 
 declare_class!(

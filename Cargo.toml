@@ -19,6 +19,7 @@ block2 = "0.5.1"
 objc2 = "0.5.2"
 objc2-foundation = { version = "0.2.2", features = ["all", "block2"] }
 objc2-quartz-core = { version = "0.2.2", features = ["all"] }
+objc2-metal-kit = { version = "0.2.2", features = ["all"] }
 bytemuck = "1.16.1"
 
 [target.'cfg(target_os = "macos")'.dependencies]
@@ -47,6 +48,9 @@ no-vsync = []
 
 # Show two triangles side by side instead of just one.
 two-triangles = []
+
+# Use `MTKView` instead of `NSView` or `UIView` as the superclass of our triangle view.
+mtkview = []
 
 # Use in-development `wgpu` with breaking changes.
 wgpu-unstable = []
