@@ -1,5 +1,5 @@
 #![deny(unsafe_op_in_unsafe_fn)]
-use objc2_foundation::MainThreadMarker;
+use objc2::MainThreadMarker;
 use tracing_subscriber::filter::EnvFilter;
 
 #[cfg(target_os = "macos")]

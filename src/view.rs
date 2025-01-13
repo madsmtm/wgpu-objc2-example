@@ -2,10 +2,9 @@ use std::cell::OnceCell;
 use std::ptr::NonNull;
 
 use objc2::rc::Retained;
-use objc2::{declare_class, msg_send_id, mutability, sel, ClassType, DeclaredClass};
-use objc2_foundation::{
-    CGRect, CGSize, MainThreadMarker, NSObjectProtocol, NSRunLoop, NSRunLoopCommonModes,
-};
+use objc2::{define_class, msg_send, sel, DeclaredClass, MainThreadMarker, Message};
+use objc2_core_foundation::{CGRect, CGSize};
+use objc2_foundation::{NSObjectProtocol, NSRunLoop, NSRunLoopCommonModes};
 use objc2_quartz_core::CADisplayLink;
 use wgpu::rwh::{
     AppKitWindowHandle, DisplayHandle, HandleError, HasDisplayHandle, HasWindowHandle,
@@ -22,33 +21,26 @@ type View = objc2_app_kit::NSView;
 #[cfg(all(not(target_os = "macos"), not(feature = "mtkview")))]
 type View = objc2_ui_kit::UIView;
 
-declare_class!(
-    pub struct WgpuTriangleView;
-
+define_class!(
     // SAFETY:
-    // - The superclass NSObject does not have any subclassing requirements.
-    // - Main thread only mutability is correct, since this is used for UI stuff.
+    // - The superclass View does not have any subclassing requirements.
     // - `Delegate` does not implement `Drop`.
-    unsafe impl ClassType for WgpuTriangleView {
-        type Super = View;
-        type Mutability = mutability::MainThreadOnly;
-        const NAME: &'static str = "View";
-    }
-
-    impl DeclaredClass for WgpuTriangleView {
-        type Ivars = OnceCell<Triangle<'static>>;
-    }
+    #[unsafe(super(View))]
+    #[name = "View"]
+    #[ivars = OnceCell<Triangle<'static>>]
+    pub struct WgpuTriangleView;
 
     unsafe impl NSObjectProtocol for WgpuTriangleView {}
 
+    /// NSView
     #[cfg(target_os = "macos")]
-    unsafe impl WgpuTriangleView {
-        #[method(wantsUpdateLayer)]
+    impl WgpuTriangleView {
+        #[unsafe(method(wantsUpdateLayer))]
         fn wants_update_layer(&self) -> bool {
             cfg!(not(feature = "draw-rect"))
         }
 
-        #[method(updateLayer)]
+        #[unsafe(method(updateLayer))]
         fn update_layer(&self) {
             tracing::trace!(
                 live_resize = unsafe { self.inLiveResize() },
@@ -63,7 +55,7 @@ declare_class!(
             }
         }
 
-        #[method(drawRect:)]
+        #[unsafe(method(drawRect:))]
         fn draw_rect(&self, _rect: CGRect) {
             tracing::trace!(
                 live_resize = unsafe { self.inLiveResize() },
@@ -80,7 +72,7 @@ declare_class!(
             // No need to call super, it does nothing on `NSView`.
         }
 
-        #[method(frameDidChange:)]
+        #[unsafe(method(frameDidChange:))]
         fn frame_did_change(&self, _notification: &objc2_foundation::NSNotification) {
             let new_size = scaled_view_frame(self);
             tracing::debug!(
@@ -98,7 +90,7 @@ declare_class!(
             }
         }
 
-        #[method(viewDidChangeBackingProperties)]
+        #[unsafe(method(viewDidChangeBackingProperties))]
         fn changed_backing_properties(&self) {
             let new_size = scaled_view_frame(self);
             tracing::debug!(
@@ -117,9 +109,10 @@ declare_class!(
         }
     }
 
+    /// UIView
     #[cfg(not(target_os = "macos"))]
-    unsafe impl WgpuTriangleView {
-        #[method(drawRect:)]
+    impl WgpuTriangleView {
+        #[unsafe(method(drawRect:))]
         fn draw_rect(&self, _rect: CGRect) {
             tracing::trace!("triggered `drawRect:`");
             let triangle = self.ivars().get().expect("initialized");
@@ -135,7 +128,7 @@ declare_class!(
 
         // `layoutSubviews` is the recommended way to listen for changes to
         // the view's frame. Also tracks changes to the backing scale factor.
-        #[method(layoutSubviews)]
+        #[unsafe(method(layoutSubviews))]
         fn layout_subviews(&self) {
             let new_size = scaled_view_frame(self);
             tracing::debug!("triggered `layoutSubviews`, new_size: {:?}", new_size);
@@ -154,8 +147,9 @@ declare_class!(
         }
     }
 
-    unsafe impl WgpuTriangleView {
-        #[method(step:)]
+    /// For DisplayLink
+    impl WgpuTriangleView {
+        #[unsafe(method(step:))]
         fn step(&self, _sender: &CADisplayLink) {
             tracing::trace!("triggered `step:`");
             if cfg!(feature = "immediate-redraw") {
@@ -208,7 +202,7 @@ impl WgpuTriangleView {
     pub fn new(mtm: MainThreadMarker, frame_rect: CGRect) -> Retained<Self> {
         // Create view
         let view = mtm.alloc().set_ivars(OnceCell::new());
-        let view: Retained<Self> = unsafe { msg_send_id![super(view), initWithFrame: frame_rect] };
+        let view: Retained<Self> = unsafe { msg_send![super(view), initWithFrame: frame_rect] };
 
         // Set up wgpu state
         let size = scaled_view_frame(&view);

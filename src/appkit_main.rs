@@ -2,16 +2,14 @@ use std::cell::OnceCell;
 
 use objc2::rc::Retained;
 use objc2::runtime::ProtocolObject;
-use objc2::{declare_class, msg_send_id, mutability, ClassType, DeclaredClass};
+use objc2::{define_class, msg_send, DefinedClass, MainThreadMarker, MainThreadOnly};
 use objc2_app_kit::{
     NSApplication, NSApplicationActivationPolicy, NSApplicationDelegate, NSBackingStoreType,
     NSStackView, NSStackViewDistribution, NSUserInterfaceLayoutOrientation, NSWindow,
     NSWindowStyleMask,
 };
-use objc2_foundation::{
-    CGPoint, CGRect, CGSize, MainThreadMarker, NSNotification, NSObject, NSObjectProtocol, NSPoint,
-    NSRect, NSSize,
-};
+use objc2_core_foundation::{CGPoint, CGRect, CGSize};
+use objc2_foundation::{NSNotification, NSObject, NSObjectProtocol, NSPoint, NSRect, NSSize};
 
 use crate::view::WgpuTriangleView;
 
@@ -20,33 +18,27 @@ struct Ivars {
     window: OnceCell<Retained<NSWindow>>,
 }
 
-declare_class!(
-    struct Delegate;
-
+define_class!(
     // SAFETY:
     // - The superclass NSObject does not have any subclassing requirements.
     // - Main thread only mutability is correct, since this is used for UI stuff.
     // - `Delegate` does not implement `Drop`.
-    unsafe impl ClassType for Delegate {
-        type Super = NSObject;
-        type Mutability = mutability::MainThreadOnly;
-        const NAME: &'static str = "Delegate";
-    }
-
-    impl DeclaredClass for Delegate {
-        type Ivars = Ivars;
-    }
+    #[unsafe(super(NSObject))]
+    #[thread_kind = MainThreadOnly]
+    #[name = "Delegate"]
+    #[ivars = Ivars]
+    struct Delegate;
 
     unsafe impl NSObjectProtocol for Delegate {}
 
     unsafe impl NSApplicationDelegate for Delegate {
-        #[method(applicationDidFinishLaunching:)]
+        #[unsafe(method(applicationDidFinishLaunching:))]
         fn did_finish_launching(&self, _notification: &NSNotification) {
             tracing::info!("applicationDidFinishLaunching:");
             self.setup();
         }
 
-        #[method(applicationShouldTerminateAfterLastWindowClosed:)]
+        #[unsafe(method(applicationShouldTerminateAfterLastWindowClosed:))]
         fn should_terminate_after_last_window_closed(&self, _sender: &NSApplication) -> bool {
             tracing::info!("applicationShouldTerminateAfterLastWindowClosed:");
             true
@@ -59,7 +51,7 @@ impl Delegate {
         let this = mtm.alloc().set_ivars(Ivars {
             window: OnceCell::new(),
         });
-        unsafe { msg_send_id![super(this), init] }
+        unsafe { msg_send![super(this), init] }
     }
 
     fn setup(&self) {
@@ -75,7 +67,7 @@ impl Delegate {
             let style = NSWindowStyleMask::Closable
                 | NSWindowStyleMask::Resizable
                 | NSWindowStyleMask::Titled;
-            let backing_store_type = NSBackingStoreType::NSBackingStoreBuffered;
+            let backing_store_type = NSBackingStoreType::Buffered;
             let flag = false;
             unsafe {
                 NSWindow::initWithContentRect_styleMask_backing_defer(
@@ -121,5 +113,5 @@ pub fn main(mtm: MainThreadMarker) {
     let app = NSApplication::sharedApplication(mtm);
     let delegate = Delegate::new(mtm);
     app.setDelegate(Some(ProtocolObject::from_ref(&*delegate)));
-    unsafe { app.run() };
+    app.run();
 }

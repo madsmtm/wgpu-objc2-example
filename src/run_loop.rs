@@ -1,17 +1,9 @@
 use std::cell::Cell;
 
-use block2::Block;
-use core_foundation::{
-    base::CFTypeRef,
-    runloop::{kCFRunLoopDefaultMode, CFRunLoopGetMain, CFRunLoopRef},
-};
-use objc2_foundation::MainThreadMarker;
+use objc2::MainThreadMarker;
+use objc2_core_foundation::{kCFRunLoopDefaultMode, CFRunLoopGetMain, CFRunLoopPerformBlock};
 
 pub fn queue_closure(closure: impl FnOnce() + 'static) {
-    extern "C" {
-        fn CFRunLoopPerformBlock(rl: CFRunLoopRef, mode: CFTypeRef, block: &Block<dyn Fn()>);
-    }
-
     // Convert `FnOnce()` to `Block<dyn Fn()>`.
     let closure = Cell::new(Some(closure));
     let block = block2::RcBlock::new(move || {
@@ -25,9 +17,9 @@ pub fn queue_closure(closure: impl FnOnce() + 'static) {
     let _mtm = MainThreadMarker::new().unwrap();
     // SAFETY: We're on the main thread, so when adding the closure, it will
     // be run on the same thread.
-    let run_loop = unsafe { CFRunLoopGetMain() };
+    let run_loop = unsafe { CFRunLoopGetMain().unwrap() };
 
-    let mode = unsafe { kCFRunLoopDefaultMode as CFTypeRef };
-    // SAFETY: The runloop is valid, the mode is a `CFStringRef`, and the block is `'static`.
-    unsafe { CFRunLoopPerformBlock(run_loop, mode, &block) }
+    let mode = unsafe { kCFRunLoopDefaultMode };
+    // SAFETY: The runloop is valid, and the block is `'static`.
+    unsafe { CFRunLoopPerformBlock(&run_loop, mode.map(|mode| &**mode), Some(&block)) }
 }

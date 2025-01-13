@@ -3,10 +3,9 @@ use std::ffi::{c_char, c_int};
 use std::ptr::NonNull;
 
 use objc2::rc::{Allocated, Retained};
-use objc2::{declare_class, msg_send_id, mutability, ClassType, DeclaredClass};
-use objc2_foundation::{
-    CGPoint, CGRect, CGSize, MainThreadMarker, NSObject, NSObjectProtocol, NSStringFromClass,
-};
+use objc2::{define_class, msg_send, ClassType, DefinedClass, MainThreadMarker, MainThreadOnly};
+use objc2_core_foundation::{CGPoint, CGRect, CGSize};
+use objc2_foundation::{NSObject, NSObjectProtocol, NSStringFromClass};
 use objc2_ui_kit::{
     UIApplication, UIApplicationDelegate, UIApplicationMain, UIScreen, UIStackView,
     UIStackViewDistribution, UIViewController, UIWindow,
@@ -14,23 +13,14 @@ use objc2_ui_kit::{
 
 use crate::view::WgpuTriangleView;
 
-declare_class!(
+define_class!(
+    // SAFETY:
+    // - The superclass UIViewController does not have any subclassing requirements.
+    // - `ViewController` does not implement `Drop`.
+    #[unsafe(super(UIViewController))]
+    #[name = "ViewController"]
     #[derive(Debug)]
     struct ViewController;
-
-    // SAFETY:
-    // - The superclass NSObject does not have any subclassing requirements.
-    // - Main thread only mutability is correct, since this is used for UI stuff.
-    // - `ViewController` does not implement `Drop`.
-    unsafe impl ClassType for ViewController {
-        type Super = UIViewController;
-        type Mutability = mutability::MainThreadOnly;
-        const NAME: &'static str = "ViewController";
-    }
-
-    impl DeclaredClass for ViewController {
-        type Ivars = ();
-    }
 
     unsafe impl NSObjectProtocol for ViewController {}
 );
@@ -38,7 +28,7 @@ declare_class!(
 impl ViewController {
     fn new(mtm: MainThreadMarker) -> Retained<Self> {
         let this = mtm.alloc().set_ivars(());
-        unsafe { msg_send_id![super(this), init] }
+        unsafe { msg_send![super(this), init] }
     }
 }
 
@@ -47,38 +37,33 @@ struct Ivars {
     window: OnceCell<Retained<UIWindow>>,
 }
 
-declare_class!(
-    #[derive(Debug)]
-    struct Delegate;
-
+define_class!(
     // SAFETY:
     // - The superclass NSObject does not have any subclassing requirements.
     // - Main thread only mutability is correct, since this is used for UI stuff.
     // - `Delegate` does not implement `Drop`.
-    unsafe impl ClassType for Delegate {
-        type Super = NSObject;
-        type Mutability = mutability::MainThreadOnly;
-        const NAME: &'static str = "Delegate";
-    }
-
-    impl DeclaredClass for Delegate {
-        type Ivars = Ivars;
-    }
+    #[unsafe(super(NSObject))]
+    #[thread_kind = MainThreadOnly]
+    #[name = "Delegate"]
+    #[ivars = Ivars]
+    #[derive(Debug)]
+    struct Delegate;
 
     unsafe impl NSObjectProtocol for Delegate {}
 
-    unsafe impl Delegate {
-        #[method_id(init)]
+    /// Called by UIApplicationMain
+    impl Delegate {
+        #[unsafe(method_id(init))]
         fn init(this: Allocated<Self>) -> Retained<Self> {
             let this = this.set_ivars(Ivars {
                 window: OnceCell::new(),
             });
-            unsafe { msg_send_id![super(this), init] }
+            unsafe { msg_send![super(this), init] }
         }
     }
 
     unsafe impl UIApplicationDelegate for Delegate {
-        #[method(applicationDidFinishLaunching:)]
+        #[unsafe(method(applicationDidFinishLaunching:))]
         fn did_finish_launching(&self, _application: &UIApplication) {
             tracing::info!("applicationDidFinishLaunching:");
             self.setup();

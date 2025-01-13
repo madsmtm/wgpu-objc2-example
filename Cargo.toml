@@ -8,25 +8,25 @@ publish = false
 [package.metadata.bundle]
 identifier = "com.example.wgpu-objc2-example"
 
-# I'm using the `all` feature here because I'm lazy, and it's easier when developing.
 [dependencies]
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
 wgpu = "22.0"
 pollster = "0.3.0"
-core-foundation = "0.9.4"
-block2 = "0.5.1"
-objc2 = "0.5.2"
-objc2-foundation = { version = "0.2.2", features = ["all", "block2"] }
-objc2-quartz-core = { version = "0.2.2", features = ["all"] }
-objc2-metal-kit = { version = "0.2.2", features = ["all"] }
 bytemuck = "1.16.1"
 
+block2 = "0.6.0"
+objc2 = "0.6.0"
+objc2-core-foundation = "0.3.0"
+objc2-foundation = "0.3.0"
+objc2-quartz-core = "0.3.0"
+objc2-metal-kit = "0.3.0"
+
 [target.'cfg(target_os = "macos")'.dependencies]
-objc2-app-kit = { version = "0.2.2", features = ["all"] }
+objc2-app-kit = "0.3.0"
 
 [target.'cfg(not(target_os = "macos"))'.dependencies]
-objc2-ui-kit = { version = "0.2.2", features = ["all"] }
+objc2-ui-kit = "0.3.0"
 
 [features]
 # Redraw immediately when resizing or when stepping.
