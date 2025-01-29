@@ -11,8 +11,8 @@ identifier = "com.example.wgpu-objc2-example"
 [dependencies]
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-wgpu = "22.0"
-pollster = "0.3.0"
+wgpu = "24.0"
+pollster = "0.4.0"
 bytemuck = "1.16.1"
 
 block2 = "0.6.0"

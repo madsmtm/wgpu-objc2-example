@@ -105,19 +105,13 @@ impl<'window> Triangle<'window> {
             layout: Some(&pipeline_layout),
             vertex: wgpu::VertexState {
                 module: &shader,
-                #[cfg(feature = "wgpu-unstable")]
                 entry_point: Some("vs_main"),
-                #[cfg(not(feature = "wgpu-unstable"))]
-                entry_point: "vs_main",
                 buffers: &[],
                 compilation_options: Default::default(),
             },
             fragment: Some(wgpu::FragmentState {
                 module: &shader,
-                #[cfg(feature = "wgpu-unstable")]
                 entry_point: Some("fs_main"),
-                #[cfg(not(feature = "wgpu-unstable"))]
-                entry_point: "fs_main",
                 compilation_options: Default::default(),
                 targets: &[Some(swapchain_format.into())],
             }),
