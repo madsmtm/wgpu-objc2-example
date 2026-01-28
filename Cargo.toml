@@ -11,7 +11,7 @@ identifier = "com.example.wgpu-objc2-example"
 [dependencies]
 tracing = "0.1.40"
 tracing-subscriber = { version = "0.3.18", features = ["env-filter"] }
-wgpu = "24.0"
+wgpu = "28.0"
 pollster = "0.4.0"
 bytemuck = "1.16.1"
 
@@ -58,4 +58,4 @@ wgpu-unstable = []
 # Uncomment the below and run `cargo update` to use a development version of wgpu.
 # default = ["wgpu-unstable"]
 # [patch.crates-io]
-# wgpu = { git = "https://github.com/madsmtm/wgpu.git", branch = "improve-metal-resizing" }
+# wgpu.path = "../wgpu/wgpu"
