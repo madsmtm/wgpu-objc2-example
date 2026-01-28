@@ -58,7 +58,7 @@ wgpu-unstable = []
 # Uncomment the below and run `cargo update` to use a development version of wgpu.
 default = ["wgpu-unstable"]
 [patch.crates-io]
-wgpu = { git = "https://github.com/madsmtm/wgpu", rev = "6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6" }
+wgpu = { git = "https://github.com/madsmtm/wgpu", rev = "38d343d196ed4ac145fb2a4cb0c10b9b63dfab23" }
 
 [profile.dev.package.objc2]
 debug-assertions = false

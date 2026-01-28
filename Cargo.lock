@@ -417,7 +417,7 @@ checksum = "f52b00d39961fc5b2736ea853c9cc86238e165017a493d1d5c8eac6bdc4cc273"
 [[package]]
 name = "naga"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1180,7 +1180,7 @@ dependencies = [
 [[package]]
 name = "wgpu"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "arrayvec",
  "bitflags",
@@ -1209,7 +1209,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "arrayvec",
  "bit-set",
@@ -1240,7 +1240,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core-deps-apple"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "wgpu-hal",
 ]
@@ -1248,7 +1248,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core-deps-emscripten"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "wgpu-hal",
 ]
@@ -1256,7 +1256,7 @@ dependencies = [
 [[package]]
 name = "wgpu-core-deps-windows-linux-android"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "wgpu-hal",
 ]
@@ -1264,7 +1264,7 @@ dependencies = [
 [[package]]
 name = "wgpu-hal"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "android_system_properties",
  "arrayvec",
@@ -1334,7 +1334,7 @@ dependencies = [
 [[package]]
 name = "wgpu-types"
 version = "28.0.0"
-source = "git+https://github.com/madsmtm/wgpu?rev=6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6#6ff5d5d8a28e35d7e5cbb9ad128f6808d2a11ff6"
+source = "git+https://github.com/madsmtm/wgpu?rev=38d343d196ed4ac145fb2a4cb0c10b9b63dfab23#38d343d196ed4ac145fb2a4cb0c10b9b63dfab23"
 dependencies = [
  "bitflags",
  "bytemuck",
