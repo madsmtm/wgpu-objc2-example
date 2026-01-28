@@ -1,14 +1,12 @@
 use std::cell::OnceCell;
-use std::ffi::{c_char, c_int};
-use std::ptr::NonNull;
 
 use objc2::rc::{Allocated, Retained};
 use objc2::{define_class, msg_send, ClassType, DefinedClass, MainThreadMarker, MainThreadOnly};
 use objc2_core_foundation::{CGPoint, CGRect, CGSize};
-use objc2_foundation::{NSObject, NSObjectProtocol, NSStringFromClass};
+use objc2_foundation::{NSObject, NSObjectProtocol, NSString};
 use objc2_ui_kit::{
-    UIApplication, UIApplicationDelegate, UIApplicationMain, UIScreen, UIStackView,
-    UIStackViewDistribution, UIViewController, UIWindow,
+    UIApplication, UIApplicationDelegate, UIScreen, UIStackView, UIStackViewDistribution,
+    UIViewController, UIWindow,
 };
 
 use crate::view::WgpuTriangleView;
@@ -78,7 +76,8 @@ impl Delegate {
         #[allow(deprecated)] // Unsure how else we should do this when setting up?
         let frame = UIScreen::mainScreen(mtm).bounds();
 
-        let window = unsafe { UIWindow::initWithFrame(mtm.alloc(), frame) };
+        #[allow(deprecated)]
+        let window = UIWindow::initWithFrame(mtm.alloc(), frame);
         eprintln!(
             "frame: {:?}, bounds: {:?}",
             window.frame().size,
@@ -90,14 +89,12 @@ impl Delegate {
         if cfg!(feature = "two-triangles") {
             // Frame will be resized by NSStackView automatically
             let frame = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0));
-            unsafe {
-                let view = UIStackView::new(mtm);
-                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
-                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
-                // view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
-                view.setDistribution(UIStackViewDistribution::FillEqually);
-                view_controller.setView(Some(&view));
-            }
+            let view = UIStackView::new(mtm);
+            view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+            view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+            // view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
+            view.setDistribution(UIStackViewDistribution::FillEqually);
+            view_controller.setView(Some(&view));
         } else {
             view_controller.setView(Some(&WgpuTriangleView::new(mtm, frame)));
         }
@@ -114,19 +111,5 @@ impl Delegate {
 }
 
 pub fn main(mtm: MainThreadMarker) {
-    // These functions are in crt_externs.h.
-    extern "C" {
-        fn _NSGetArgc() -> *mut c_int;
-        fn _NSGetArgv() -> *mut *mut *mut c_char;
-    }
-
-    let _ = mtm;
-    unsafe {
-        UIApplicationMain(
-            *_NSGetArgc(),
-            NonNull::new(*_NSGetArgv()).unwrap(),
-            None,
-            Some(NSStringFromClass(Delegate::class()).as_ref()),
-        )
-    };
+    UIApplication::main(None, Some(&NSString::from_class(Delegate::class())), mtm)
 }

@@ -42,31 +42,25 @@ define_class!(
 
         #[unsafe(method(updateLayer))]
         fn update_layer(&self) {
-            tracing::trace!(
-                live_resize = unsafe { self.inLiveResize() },
-                "triggered `updateLayer`"
-            );
+            tracing::trace!(live_resize = self.inLiveResize(), "triggered `updateLayer`");
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
             if cfg!(feature = "queue-display") {
                 let view = self.retain();
-                queue_closure(move || unsafe { view.setNeedsDisplay(true) });
+                queue_closure(move || view.setNeedsDisplay(true));
             }
         }
 
         #[unsafe(method(drawRect:))]
         fn draw_rect(&self, _rect: CGRect) {
-            tracing::trace!(
-                live_resize = unsafe { self.inLiveResize() },
-                "triggered `drawRect:`"
-            );
+            tracing::trace!(live_resize = self.inLiveResize(), "triggered `drawRect:`");
             let triangle = self.ivars().get().expect("initialized");
             triangle.redraw();
 
             if cfg!(feature = "queue-display") {
                 let view = self.retain();
-                queue_closure(move || unsafe { view.setNeedsDisplay(true) });
+                queue_closure(move || view.setNeedsDisplay(true));
             }
 
             // No need to call super, it does nothing on `NSView`.
@@ -76,12 +70,16 @@ define_class!(
         fn frame_did_change(&self, _notification: &objc2_foundation::NSNotification) {
             let new_size = scaled_view_frame(self);
             tracing::debug!(
-                live_resize = unsafe { self.inLiveResize() },
+                live_resize = self.inLiveResize(),
                 ?new_size,
                 "triggered `frameDidChange:`"
             );
             let triangle = self.ivars().get().expect("initialized");
-            triangle.resize(new_size.width as u32, new_size.height as u32, self.window().unwrap().backingScaleFactor() as f32);
+            triangle.resize(
+                new_size.width as u32,
+                new_size.height as u32,
+                self.window().unwrap().backingScaleFactor() as f32,
+            );
             if cfg!(all(
                 feature = "immediate-redraw",
                 not(feature = "display-link")
@@ -94,12 +92,16 @@ define_class!(
         fn changed_backing_properties(&self) {
             let new_size = scaled_view_frame(self);
             tracing::debug!(
-                live_resize = unsafe { self.inLiveResize() },
+                live_resize = self.inLiveResize(),
                 ?new_size,
                 "triggered `viewDidChangeBackingProperties`"
             );
             let triangle = self.ivars().get().expect("initialized");
-            triangle.resize(new_size.width as u32, new_size.height as u32, self.window().unwrap().backingScaleFactor() as f32);
+            triangle.resize(
+                new_size.width as u32,
+                new_size.height as u32,
+                self.window().unwrap().backingScaleFactor() as f32,
+            );
             if cfg!(all(
                 feature = "immediate-redraw",
                 not(feature = "display-link")
@@ -133,7 +135,11 @@ define_class!(
             let new_size = scaled_view_frame(self);
             tracing::debug!("triggered `layoutSubviews`, new_size: {:?}", new_size);
             let triangle = self.ivars().get().expect("initialized");
-            triangle.resize(new_size.width as u32, new_size.height as u32, self.contentScaleFactor() as f32);
+            triangle.resize(
+                new_size.width as u32,
+                new_size.height as u32,
+                self.contentScaleFactor() as f32,
+            );
             if cfg!(all(
                 feature = "immediate-redraw",
                 not(feature = "display-link")
@@ -157,9 +163,7 @@ define_class!(
                 triangle.redraw();
             } else {
                 #[cfg(target_os = "macos")]
-                unsafe {
-                    self.setNeedsDisplay(true);
-                }
+                self.setNeedsDisplay(true);
                 #[cfg(not(target_os = "macos"))]
                 self.setNeedsDisplay();
             }
@@ -223,8 +227,7 @@ impl WgpuTriangleView {
         #[cfg(target_os = "macos")]
         {
             view.setPostsFrameChangedNotifications(true);
-            let notification_center =
-                unsafe { objc2_foundation::NSNotificationCenter::defaultCenter() };
+            let notification_center = objc2_foundation::NSNotificationCenter::defaultCenter();
             unsafe {
                 notification_center.addObserver_selector_name_object(
                     &view,
@@ -237,9 +240,7 @@ impl WgpuTriangleView {
 
         // Ensure that the view calls `drawRect:` after being resized
         #[cfg(not(target_os = "macos"))]
-        unsafe {
-            view.setContentMode(objc2_ui_kit::UIViewContentMode::Redraw);
-        }
+        view.setContentMode(objc2_ui_kit::UIViewContentMode::Redraw);
 
         if cfg!(feature = "display-link") {
             view.redraw_with_displaylink();
@@ -259,7 +260,7 @@ impl WgpuTriangleView {
 
 #[cfg(target_os = "macos")]
 fn scaled_view_frame(view: &View) -> CGSize {
-    unsafe { view.convertSizeToBacking(view.frame().size) }
+    view.convertSizeToBacking(view.frame().size)
 }
 
 #[cfg(not(target_os = "macos"))]

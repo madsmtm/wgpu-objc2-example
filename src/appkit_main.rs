@@ -85,14 +85,12 @@ impl Delegate {
         if cfg!(feature = "two-triangles") {
             // Frame will be resized by NSStackView automatically
             let frame = CGRect::new(CGPoint::new(0.0, 0.0), CGSize::new(1.0, 1.0));
-            unsafe {
-                let view = NSStackView::new(mtm);
-                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
-                view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
-                view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
-                view.setDistribution(NSStackViewDistribution::FillEqually);
-                window.setContentView(Some(&view));
-            }
+            let view = NSStackView::new(mtm);
+            view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+            view.addArrangedSubview(&WgpuTriangleView::new(mtm, frame));
+            view.setOrientation(NSUserInterfaceLayoutOrientation::Horizontal);
+            view.setDistribution(NSStackViewDistribution::FillEqually);
+            window.setContentView(Some(&view));
         } else {
             let frame = window.contentView().expect("window content view").frame();
             let view = WgpuTriangleView::new(mtm, frame);

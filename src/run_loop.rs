@@ -1,7 +1,7 @@
 use std::cell::Cell;
 
 use objc2::MainThreadMarker;
-use objc2_core_foundation::{kCFRunLoopDefaultMode, CFRunLoopGetMain, CFRunLoopPerformBlock};
+use objc2_core_foundation::{kCFRunLoopDefaultMode, CFRunLoop};
 
 pub fn queue_closure(closure: impl FnOnce() + 'static) {
     // Convert `FnOnce()` to `Block<dyn Fn()>`.
@@ -15,11 +15,12 @@ pub fn queue_closure(closure: impl FnOnce() + 'static) {
     });
 
     let _mtm = MainThreadMarker::new().unwrap();
-    // SAFETY: We're on the main thread, so when adding the closure, it will
-    // be run on the same thread.
-    let run_loop = unsafe { CFRunLoopGetMain().unwrap() };
+    let run_loop = CFRunLoop::main().unwrap();
 
     let mode = unsafe { kCFRunLoopDefaultMode };
     // SAFETY: The runloop is valid, and the block is `'static`.
-    unsafe { CFRunLoopPerformBlock(&run_loop, mode.map(|mode| &**mode), Some(&block)) }
+    //
+    // Additionally, we're on the main thread, so when adding the closure, it
+    // will be run on the same thread.
+    unsafe { run_loop.perform_block(mode.map(|mode| &**mode), Some(&block)) }
 }
